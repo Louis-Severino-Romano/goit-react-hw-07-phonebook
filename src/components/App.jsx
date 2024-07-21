@@ -1,16 +1,30 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { addContact, deleteContact } from '../redux/contactsSlice';
+import { fetchContacts } from '../redux/operations';
 import { setFilter } from '../redux/filterSlice';
-import { getContacts, getFilter } from '../redux/selectors';
+import { addContact, deleteContact } from '../redux/operations';
+import {
+  getContacts,
+  getFilter,
+  getIsLoading,
+  getError,
+} from '../redux/selectors';
 import { ContactForm } from './ContactForm/ContactForm';
 import { Filter } from './Filter/Filter';
 import { ContactList } from './ContactList/ContactList';
 
 export const App = () => {
   const contacts = useSelector(getContacts);
+  const isLoading = useSelector(getIsLoading);
+  const error = useSelector(getError);
   const filter = useSelector(getFilter);
   const dispatch = useDispatch();
+
+  console.log('contacts', contacts);
+
+  useEffect(() => {
+    dispatch(fetchContacts());
+  }, [dispatch]);
 
   const handleAddContact = newContact => {
     // Placeholder for future Redux action
@@ -39,10 +53,16 @@ export const App = () => {
 
       <h2>Contacts</h2>
       <Filter filter={filter} setFilter={handleSetFilter} />
-      <ContactList
-        contacts={filteredContacts} // Passing the filteredContacts as prop
-        deleteContact={handleDeleteContact}
-      />
+      {isLoading && (
+        <b style={{ display: 'block', padding: '0 0 20px 10px' }}>Loading...</b>
+      )}
+      {error && <b>Error: {error}</b>}
+      {contacts && (
+        <ContactList
+          contacts={filteredContacts}
+          deleteContact={handleDeleteContact}
+        />
+      )}
     </div>
   );
 };
